@@ -1,41 +1,13 @@
-Synology PHP
+Synology FileStation Client API
 =================
 
-This is a PHP Library that consume Synology APIs
+This is a PHP Library that consume Synology FileStation APIs
 
 * SYNO.Api :
     * connect
     * disconnect
     * getAvailableApi
 
-* SYNO.DownloadStation :
-    * connect
-    * disconnect
-    * getInfo
-    * getConfig
-    * setConfig
-    * getScheduleConfig
-    * setScheduleConfig
-    * getTaskList
-    * getTaskInfo
-    * addTask
-    * deleteTask
-    * pauseTask
-    * resumeTask
-    * getStatistics
-    * getRssList
-    * refreshRss
-    * getRssFeedList
-
-* SYNO.AudioStation:
-    * connect
-    * disconnect
-    * getInfo
-    * getObjects
-    * getObjectInfo
-    * getObjectCover
-    * searchSong
-    
 * SYNO.FileStation:
     * connect
     * disconnect
@@ -45,26 +17,11 @@ This is a PHP Library that consume Synology APIs
     * getList
     * search
     * download
-    
-* SYNO.VideoStation:
-    * connect
-    * disconnect
-    * getInfo
-    * getObjects
-    * searchObject
-    * listObjects
-    
-Usage for Synology Api:
+
+Usage for FileStationClient Synology Api:
 ```php
-$synology = new Synology_Api('192.168.10.5', 5000, 'http', 1);
-//$synology->activateDebug();
+$synology = new FileStationClient('192.168.10.5', 5000, 'http', 1);
+$synology->activateDebug();
 $synology->connect('admin', 'xxxx');
 print_r($synology->getAvailableApi());
 ``` 
- 
-Usage for AudioStation:
-```php
-$synology = new Synology_AudioStation_Api('192.168.10.5', 5000, 'http', 1);
-$synology->connect('admin', 'xxxx');
-print_r($synology->getInfo());
-```

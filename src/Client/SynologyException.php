@@ -1,8 +1,14 @@
 <?php
 
-class Synology_Exception extends Exception
-{
+namespace Synology\Api\Client;
 
+use Exception;
+
+/**
+ * Class SynologyException.
+ */
+class SynologyException extends Exception
+{
     public function __construct($message = null, $code = null)
     {
         if (empty($message)) {
