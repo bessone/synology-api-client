@@ -17,7 +17,7 @@ abstract class Client
     public const API_SERVICE_NAME = 'API';
 
     public const CONNECT_TIMEOUT = 2000;
-    public const REQUEST_TIMEOUT = 30000;
+    public const REQUEST_TIMEOUT = 300000;
 
     private $_protocol = self::PROTOCOL_HTTP;
 
@@ -96,17 +96,6 @@ abstract class Client
     }
 
     /**
-     * Get ApiName
-     *
-     * @param string $api
-     * @return string
-     */
-    private function getApiName($api): string
-    {
-        return $this->_namespace.'.'.$this->_serviceName.'.'.$api;
-    }
-
-    /**
      * Process a request
      *
      * @param string $api
@@ -115,11 +104,11 @@ abstract class Client
      * @param array $params
      * @param int $version
      * @param string $httpMethod
-     * @return array bool
+     * @return mixed
      *
      * @throws SynologyException
      */
-    protected function request($api, $path, $method, $params = array(), $version = null, $httpMethod = 'get'): array
+    protected function request($service, $api, $path, $method, $params = array(), $version = null, $httpMethod = 'get', $file = null)
     {
         if (!is_array($params)) {
             $params = array(
@@ -127,9 +116,16 @@ abstract class Client
             );
         }
 
-        $params['api'] = $this->getApiName($api);
+        if ($this->isConnected()) {
+            $params['_sid'] = $this->getSessionId();
+        }
+
+        $params['api'] = $this->_namespace.'.'.$service.'.'.$api;
         $params['version'] = ((int)$version > 0) ? (int)$version : $this->_version;
         $params['method'] = $method;
+        if ($file) {
+            $files[$params['filename']] = file_get_contents($file);
+        }
 
         // create a new cURL resource
         $ch = curl_init();
@@ -137,21 +133,34 @@ abstract class Client
         if ($httpMethod !== 'post') {
             $url = $this->getBaseUrl().$path.'?'.http_build_query($params);
             $this->log($url, 'Requested Url');
-
             curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
         } else {
-            $url = $this->getBaseUrl().$path;
-            $this->log($url, 'Requested Url');
-            $this->log($params, 'Post Variable');
+            $getParam = [
+                'api' => 'SYNO.FileStation.Upload',
+                'method' => $params['method'],
+                'version' => $params['version'],
+                '_sid' => $params['_sid']
+            ];
+            $url = $this->getBaseUrl().$path.'?'.http_build_query($getParam);
 
+            unset($params['method'], $params['api'], $params['version'], $params['_sid']);
+            $params['size'] = filesize($file);
+            $boundary = uniqid();
+            $delimiter = '--' . $boundary;
+            $postData = $this->builddataFiles($boundary, $params, $files);
             // set the url, number of POST vars, POST data
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, count($params));
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Content-Type: multipart/form-data; boundary=" . $delimiter,
+                "Content-Length: " . strlen($postData),
+            ]);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
         }
 
         // set URL and other appropriate options
-        curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, self::CONNECT_TIMEOUT);
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, self::REQUEST_TIMEOUT);
@@ -183,6 +192,41 @@ abstract class Client
     }
 
     /**
+     * @param $boundary
+     * @param $fields
+     * @param $files
+     *
+     * @return string
+     */
+    private function buildDataFiles($boundary, $fields, $files): string
+    {
+        $data = '';
+        $eol = "\r\n";
+
+        $delimiter = '--' . $boundary;
+
+        foreach ($fields as $name => $content) {
+            $data .= "--" . $delimiter . $eol
+                . 'Content-Disposition: form-data; name="' . $name . "\"".$eol.$eol
+                . $content . $eol;
+        }
+
+        foreach ($files as $name => $content) {
+            $data .= "--" . $delimiter . $eol
+                . 'Content-Disposition: form-data; name="file"; filename="'.$name.'"' . $eol
+                //. 'Content-Type: image/png'.$eol
+                . 'Content-Type: application/octet-stream'.$eol
+            ;
+
+            $data .= $eol;
+            $data .= $content . $eol;
+        }
+        $data .= "--" . $delimiter . "--".$eol;
+
+        return $data;
+    }
+
+    /**
      * @param $json
      *
      * @return array|bool
@@ -191,15 +235,15 @@ abstract class Client
     private function parseRequest($json)
     {
         if (($data = json_decode(trim($json), true)) !== null) {
-            if ($data->success === 1) {
-                return $data->data ?? true;
+            if ($data['success'] === true) {
+                return $data['data'] ?? true;
             }
 
-            if (array_key_exists($data->error->code, self::$_errorCodes)) {
-                throw new SynologyException(self::$_errorCodes[$data->error->code]);
+            if (array_key_exists($data['error']['code'], self::$_errorCodes)) {
+                throw new SynologyException(self::$_errorCodes[$data['error']['code']]);
             }
 
-            throw new SynologyException(null, $data->error->code);
+            throw new SynologyException(null, $data['error']['code']);
         }
 
         return $json;
@@ -246,7 +290,7 @@ abstract class Client
      */
     public function getAvailableApi(): array
     {
-        return $this->request('Info', 'query.cgi', 'query', array('query' => 'all'));
+        return $this->request('API','Info', 'query.cgi', 'query', array('query' => 'all'));
     }
 
     /**
@@ -270,13 +314,13 @@ abstract class Client
         $options = array(
             'account' => $username,
             'passwd' => $password,
-            'session' => $this->_sessionName,
+            'session' => 'FileStation',
             'format' => 'sid'
         );
-        $data = $this->request('Auth', 'auth.cgi', 'login', $options, 2);
+        $data = $this->request('API','Auth', 'auth.cgi', 'login', $options, 2);
 
         // save session name id
-        $this->_sid = $data->sid;
+        $this->_sid = $data['sid'];
 
         return $this;
     }
@@ -290,7 +334,7 @@ abstract class Client
     public function disconnect(): Client
     {
         $this->log($this->_sessionName, 'Disconnect Session');
-        $this->request('Auth', 'auth.cgi', 'logout', array(
+        $this->request('API', 'Auth', 'auth.cgi', 'logout', array(
             '_sid' => $this->_sid,
             'session' => $this->_sessionName
         ));

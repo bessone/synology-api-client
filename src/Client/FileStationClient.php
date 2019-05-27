@@ -48,7 +48,7 @@ class FileStationClient extends Client
      */
     public function getInfo(): array
     {
-        return $this->request('Info', 'FileStation/info.cgi', 'getinfo');
+        return $this->request(self::API_SERVICE_NAME, 'Info', 'FileStation/info.cgi', 'getinfo');
     }
 
     /**
@@ -72,6 +72,7 @@ class FileStationClient extends Client
         $additional = false
     ): array {
         return $this->request(
+            self::API_SERVICE_NAME,
             'List',
             'entry.cgi',
             'list_share',
@@ -107,7 +108,7 @@ class FileStationClient extends Client
                 throw new SynologyException('Unknow "'.$type.'" object');
         }
 
-        return $this->request($type, $path, 'getinfo', ['id' => $id]);
+        return $this->request(self::API_SERVICE_NAME, $type, $path, 'getinfo', ['id' => $id]);
     }
 
     /**
@@ -121,7 +122,7 @@ class FileStationClient extends Client
      * @param string $pattern
      * @param string $filetype (all|file|dir)
      * @param bool $additional
-     * @return array
+     * @return mixed
      * @throws SynologyException
      */
     public function getList(
@@ -133,8 +134,9 @@ class FileStationClient extends Client
         $pattern = '',
         $filetype = 'all',
         $additional = false
-    ): array {
+    ) {
         return $this->request(
+            self::API_SERVICE_NAME,
             'List',
             'entry.cgi',
             'list',
@@ -148,6 +150,33 @@ class FileStationClient extends Client
                 'filetype' => $filetype,
                 'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
             ]
+        );
+    }
+
+    /**
+     * Upload file to given path
+     *
+     * @param $file
+     * @param $filename
+     * @return mixed
+     * @throws SynologyException
+     */
+    public function uploadFile($file, $filename)
+    {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Upload',
+            'entry.cgi',
+            'upload',
+            [
+                'path' => '/Kallicontrol',
+                'overwrite' => 'true',
+                'create_parents' => 'true',
+                'filename' => $filename,
+            ],
+            2,
+            'post',
+            $file
         );
     }
 
@@ -176,6 +205,7 @@ class FileStationClient extends Client
         $additional = false
     ): array {
         return $this->request(
+            self::API_SERVICE_NAME,
             'List',
             'entry.cgi',
             'list',
@@ -203,6 +233,7 @@ class FileStationClient extends Client
     public function download($path, $mode = 'open'): array
     {
         return $this->request(
+            self::API_SERVICE_NAME,
             'Download',
             'FileStation/file_download.cgi',
             'download',
