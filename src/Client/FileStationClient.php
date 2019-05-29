@@ -243,4 +243,23 @@ class FileStationClient extends Client
             ]
         );
     }
+
+
+    /**
+     * Delete file from a given path
+     *
+     * @param string $path like '/home'
+     * @return mixed
+     * @throws SynologyException
+     */
+    public function delete($path) {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Delete',
+            'entry.cgi',
+            'delete',
+            ['path' => $path],
+            1
+        );
+    }
 }
