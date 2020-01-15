@@ -262,4 +262,34 @@ class FileStationClient extends Client
             1
         );
     }
+    
+    /**
+     * Create a folder inside a given path
+     *
+     * @param string $path like '/home'
+     * @param string $name
+     * @param bool $force_parent
+     * @param bool $additional
+     * @return mixed
+     * @throws SynologyException
+     */
+    public function createFolder(
+        $path = '/home',
+        $name = '',
+        $force_parent = false,
+        $additional = false
+    ) {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'CreateFolder',
+            'entry.cgi',
+            'create',
+            [
+                'folder_path' => $path,
+                'name' => $name,
+                'force_parent' => $force_parent,
+                'additional' => $additional ? 'real_path,size,owner,time,perm,type' : '',
+            ]
+        );
+    }
 }
