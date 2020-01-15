@@ -1,7 +1,7 @@
 {
-    "name": "victorbalssa/synology-api-client",
+    "name": "bessone/synology-api-client",
     "description": "Synology API client",
-    "homepage": "https://github.com/victorbalssa/synology-api-client",
+    "homepage": "https://github.com/bessone/synology-api-client",
     "version": "0.3.0",
     "keywords" : [
         "synology",
@@ -17,6 +17,10 @@
         {
             "name": "Victor Balssa",
             "email": "victor.balssa@gmail.com"
+        },
+        {
+            "name": "Riccardo Bessone",
+            "email": "riccardo@bess.one"
         }
     ],
     "minimum-stability": "dev",
@@ -28,7 +32,7 @@
     "require-dev": {
     },
     "support": {
-        "issues": "https://github.com/victorbalssa/synology-api-client/issues"
+        "issues": "https://github.com/bessone/synology-api-client/issues"
     },
     "autoload": {
         "psr-4": {
