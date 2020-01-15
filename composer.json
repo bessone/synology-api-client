@@ -2,7 +2,7 @@
     "name": "bessone/synology-api-client",
     "description": "Synology API client",
     "homepage": "https://github.com/bessone/synology-api-client",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "keywords" : [
         "synology",
         "nas"
