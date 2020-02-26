@@ -154,6 +154,30 @@ class FileStationClient extends Client
     }
 
     /**
+     * Get information of files/directories in a given paths
+     *
+     * @param array $path
+     * @param bool $additional
+     * @return mixed
+     * @throws SynologyException
+     */
+    public function getPathInfo(
+        $path = array(),
+        $additional = false
+    ) {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'List',
+            'entry.cgi',
+            'getinfo',
+            [
+                'path' => implode(',', $path),
+                'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
+            ]
+        );
+    }
+    
+    /**
      * Upload file to given path
      *
      * @param $file
