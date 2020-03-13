@@ -135,6 +135,8 @@ class FileStationClient extends Client
         $filetype = 'all',
         $additional = false
     ) {
+        $path = $this->escapeParam($path);
+        
         return $this->request(
             self::API_SERVICE_NAME,
             'List',
@@ -165,6 +167,8 @@ class FileStationClient extends Client
         $path = array(),
         $additional = false
     ) {
+        $path = $this->escapeParam($path);
+        
         return $this->request(
             self::API_SERVICE_NAME,
             'List',
@@ -303,6 +307,8 @@ class FileStationClient extends Client
         $force_parent = false,
         $additional = false
     ) {
+        $path = $this->escapeParam($path);
+        
         return $this->request(
             self::API_SERVICE_NAME,
             'CreateFolder',
