@@ -250,6 +250,21 @@ abstract class Client
     }
 
     /**
+     * Escape param string
+     *
+     * @param string $param
+     * @return string
+     */
+    protected function escapeParam($param)
+    {
+        // Escape backslashes and commas.
+        $param = str_replace('\\', '\\\\', $param);
+        $param = str_replace(',', '\,', $param);
+
+        return $param;
+    }
+    
+    /**
      * Activate the debug mode
      *
      * @return Client
