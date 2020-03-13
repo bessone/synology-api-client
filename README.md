@@ -15,8 +15,13 @@ This is a PHP Library that consume Synology FileStation APIs
     * getShares
     * getObjectInfo
     * getList
+    * getPathInfo
     * search
+    * createFolder
+    * uploadFile
     * download
+    * delete
+    
 
 Usage for FileStationClient Synology Api:
 ```php
