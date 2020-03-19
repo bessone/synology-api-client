@@ -136,7 +136,7 @@ class FileStationClient extends Client
         $additional = false
     ) {
         $path = $this->escapeParam($path);
-        
+
         return $this->request(
             self::API_SERVICE_NAME,
             'List',
@@ -168,7 +168,7 @@ class FileStationClient extends Client
         $additional = false
     ) {
         $path = $this->escapeParam($path);
-        
+
         return $this->request(
             self::API_SERVICE_NAME,
             'List',
@@ -180,7 +180,7 @@ class FileStationClient extends Client
             ]
         );
     }
-    
+
     /**
      * Upload file to given path
      *
@@ -189,7 +189,7 @@ class FileStationClient extends Client
      * @return mixed
      * @throws SynologyException
      */
-    public function uploadFile($file, $filename)
+    public function uploadFile($file, $filename, $path = '/home')
     {
         return $this->request(
             self::API_SERVICE_NAME,
@@ -197,8 +197,8 @@ class FileStationClient extends Client
             'entry.cgi',
             'upload',
             [
-                'path' => '/Kallicontrol',
-                'overwrite' => 'true',
+                'path' => $path,
+                'overwrite' => 'false',
                 'create_parents' => 'true',
                 'filename' => $filename,
             ],
@@ -290,7 +290,7 @@ class FileStationClient extends Client
             1
         );
     }
-    
+
     /**
      * Create a folder inside a given path
      *
@@ -308,7 +308,7 @@ class FileStationClient extends Client
         $additional = false
     ) {
         $path = $this->escapeParam($path);
-        
+
         return $this->request(
             self::API_SERVICE_NAME,
             'CreateFolder',
