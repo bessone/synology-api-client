@@ -308,6 +308,7 @@ class FileStationClient extends Client
         $additional = false
     ) {
         $path = $this->escapeParam($path);
+        $name = $this->escapeParam($name);
 
         return $this->request(
             self::API_SERVICE_NAME,
