@@ -29,7 +29,7 @@ abstract class Client
 
     private $_address = '';
 
-    private $_version = 1;
+    private $_version = 3;
 
     private $_serviceName;
 
@@ -317,7 +317,7 @@ abstract class Client
             'session' => 'FileStation',
             'format' => 'sid'
         );
-        $data = $this->request('API','Auth', 'auth.cgi', 'login', $options, 2);
+        $data = $this->request('API','Auth', 'auth.cgi', 'login', $options, 3);
 
         // save session name id
         $this->_sid = $data['sid'];

@@ -174,7 +174,7 @@ class FileStationClient extends Client
                 'create_parents' => 'true',
                 'filename' => $filename,
             ],
-            2,
+            3,
             'post',
             $file
         );
@@ -259,7 +259,7 @@ class FileStationClient extends Client
             'entry.cgi',
             'delete',
             ['path' => $path],
-            1
+            3
         );
     }
 }
