@@ -259,7 +259,7 @@ class FileStationClient extends Client
             'entry.cgi',
             'delete',
             ['path' => $path],
-            3
+            2
         );
     }
 }
