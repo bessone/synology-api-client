@@ -2,7 +2,7 @@
     "name": "victorbalssa/synology-api-client",
     "description": "Synology API client",
     "homepage": "https://github.com/victorbalssa/synology-api-client",
-    "version": "0.4.0",
+    "version": "0.4.2",
     "keywords" : [
         "synology",
         "nas"
