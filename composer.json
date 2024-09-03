@@ -1,8 +1,8 @@
 {
-    "name": "bessone/synology-api-client",
+    "name": "kazio73/synology-api-client",
     "description": "Synology API client",
-    "homepage": "https://github.com/bessone/synology-api-client",
-    "version": "0.3.5",
+    "homepage": "https://github.com/Kazio73/synology-api-client",
+    "version": "0.3.6",
     "keywords" : [
         "synology",
         "nas"
@@ -10,6 +10,10 @@
     "type": "library",
     "license": "MIT",
     "authors": [
+        {
+            "name": "Kazik Karczewski",
+            "email": "kazio@kargraf.com.pl"
+        },
         {
             "name": "Nicolas Cerveaux",
             "email": "nicolas.cerveaux@gmail.com"
@@ -32,7 +36,7 @@
     "require-dev": {
     },
     "support": {
-        "issues": "https://github.com/bessone/synology-api-client/issues"
+        "issues": "https://github.com/Kazio73/synology-api-client/issues"
     },
     "autoload": {
         "psr-4": {
