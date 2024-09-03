@@ -27,7 +27,8 @@ class FileStationClient extends Client
         $protocol = null,
         $version = 1,
         $verifySSL = false
-    ) {
+    )
+    {
         parent::__construct(
             self::API_SERVICE_NAME,
             self::API_NAMESPACE,
@@ -70,7 +71,8 @@ class FileStationClient extends Client
         $sortby = 'name',
         $sortdirection = 'asc',
         $additional = false
-    ): array {
+    ): array
+    {
         return $this->request(
             self::API_SERVICE_NAME,
             'List',
@@ -105,7 +107,7 @@ class FileStationClient extends Client
                 $path = 'FileStation/file_sharing.cgi';
                 break;
             default:
-                throw new SynologyException('Unknow "'.$type.'" object');
+                throw new SynologyException('Unknow "' . $type . '" object');
         }
 
         return $this->request(self::API_SERVICE_NAME, $type, $path, 'getinfo', ['id' => $id]);
@@ -134,7 +136,8 @@ class FileStationClient extends Client
         $pattern = '',
         $filetype = 'all',
         $additional = false
-    ) {
+    )
+    {
         $path = $this->escapeParam($path);
 
         return $this->request(
@@ -166,7 +169,8 @@ class FileStationClient extends Client
     public function getPathInfo(
         $path = array(),
         $additional = false
-    ) {
+    )
+    {
         $path = $this->escapeParam($path);
 
         return $this->request(
@@ -231,7 +235,8 @@ class FileStationClient extends Client
         $sortdirection = 'asc',
         $filetype = 'all',
         $additional = false
-    ): array {
+    ): array
+    {
         return $this->request(
             self::API_SERVICE_NAME,
             'List',
@@ -263,12 +268,80 @@ class FileStationClient extends Client
         return $this->request(
             self::API_SERVICE_NAME,
             'Download',
-            'FileStation/file_download.cgi',
+            'entry.cgi',
             'download',
             [
                 'path' => $path,
-                'mode' => $mode,
+                'mode' => $mode
             ]
+        );
+    }
+
+    /**
+     * Download a file
+     *
+     * @param string $path (comma separated)
+     * @param string $name
+     * @return array
+     * @throws SynologyException
+     */
+    public function rename(string $path, string $name): array
+    {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'List',
+            'entry.cgi',
+            'rename',
+            [
+                'path' => $path,
+                'name' => $name,
+            ]
+        );
+    }
+
+    /**
+     * ListShare a file
+     *
+     * @return array
+     * @throws SynologyException
+     */
+    public function shareList(): array
+    {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Sharing',
+            'entry.cgi',
+            'list',
+            [
+                'offset' => 0,
+                'limit' => 10,
+            ],
+            3
+        );
+    }
+
+    /**
+     * CreateShare a file
+     *
+     * @param string $path (comma separated)
+     * @param string $name
+     * @return array
+     * @throws SynologyException
+     */
+    public function shareCreate(string $path): array
+    {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Sharing',
+            'entry.cgi',
+            'create',
+            [
+                'path' => $path,
+                'password' => 'KazioK',
+                'date_expired' => '' ,
+                'date_available' => '' ,
+            ],
+            3
         );
     }
 
@@ -280,7 +353,8 @@ class FileStationClient extends Client
      * @return mixed
      * @throws SynologyException
      */
-    public function delete($path) {
+    public function delete($path)
+    {
         return $this->request(
             self::API_SERVICE_NAME,
             'Delete',
@@ -306,7 +380,8 @@ class FileStationClient extends Client
         $name = '',
         $force_parent = false,
         $additional = false
-    ) {
+    )
+    {
         $path = $this->escapeParam($path);
         $name = $this->escapeParam($name);
 
@@ -323,4 +398,4 @@ class FileStationClient extends Client
             ]
         );
     }
-}
+    }

@@ -108,13 +108,15 @@ abstract class Client
      *
      * @throws SynologyException
      */
-    protected function request($service, $api, $path, $method, $params = array(), $version = null, $httpMethod = 'get', $file = null)
+    protected function request($service, $api, $path, $method, array $params = array(), $version = null, $httpMethod = 'get', $file = null)
     {
+
         if (!is_array($params)) {
             $params = array(
                 $params,
             );
         }
+
 
         if ($this->isConnected()) {
             $params['_sid'] = $this->getSessionId();
@@ -126,6 +128,7 @@ abstract class Client
         if ($file) {
             $files[$params['filename']] = file_get_contents($file);
         }
+
 
         // create a new cURL resource
         $ch = curl_init();
@@ -158,6 +161,8 @@ abstract class Client
                 "Content-Length: " . strlen($postData),
             ]);
             curl_setopt($ch, CURLOPT_HEADER, 0);
+            // By Kazio
+            curl_setopt($ch, CURLOPT_COOKIE, 'sid='.$this->_sid);
         }
 
         // set URL and other appropriate options
@@ -238,7 +243,7 @@ abstract class Client
             if ($data['success'] === true) {
                 return $data['data'] ?? true;
             }
-
+                print_r( $data['error']['code']);
             if (array_key_exists($data['error']['code'], self::$_errorCodes)) {
                 throw new SynologyException(self::$_errorCodes[$data['error']['code']]);
             }
@@ -332,7 +337,7 @@ abstract class Client
             'session' => 'FileStation',
             'format' => 'sid'
         );
-        $data = $this->request('API','Auth', 'auth.cgi', 'login', $options, 2);
+        $data = $this->request('API','Auth', 'auth.cgi', 'login', $options, 3);
 
         // save session name id
         $this->_sid = $data['sid'];
