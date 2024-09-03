@@ -2,4 +2,5 @@
 .project
 .settings/
 /vendor/
+/testing.php
 !/testing.php
