@@ -49,6 +49,9 @@ class SynologyException extends Exception
                 case 404:
                     $message = 'Permission denied';
                     break;
+                case 408:
+                    $message = 'No such file or directory';
+                    break;
                 default:
                     $message = 'Unknown';
                     break;

@@ -48,6 +48,12 @@ abstract class Client
         105 => 'The logged in session does not have permission',
         106 => 'Session timeout',
         107 => 'Session interrupted by duplicate login',
+        400 => 'No such account or incorrect password',
+        401 => 'Guest account disabled',
+        402 => 'Account disabled',
+        403 => 'Wrong password',
+        404 => 'Permission denied',
+        408 => 'No such file or directory'
     ];
 
     /**
@@ -243,7 +249,6 @@ abstract class Client
             if ($data['success'] === true) {
                 return $data['data'] ?? true;
             }
-                print_r( $data['error']['code']);
             if (array_key_exists($data['error']['code'], self::$_errorCodes)) {
                 throw new SynologyException(self::$_errorCodes[$data['error']['code']]);
             }
