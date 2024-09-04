@@ -29,7 +29,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": ">=8.1.0",
+        "php": ">=8.2.0",
         "ext-curl": "*",
         "ext-json": "*"
     },
@@ -40,7 +40,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Synology\\Api\\": "src"
+            "Kazio73\\SynologyApiClient\\": "src/"
         }
     }
 }

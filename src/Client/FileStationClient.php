@@ -1,6 +1,6 @@
 <?php
 
-namespace Synology\Api\Client;
+namespace  Kazio73\SynologyApiClient\Client;
 
 /**
  * Class Client.
