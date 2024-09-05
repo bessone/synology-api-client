@@ -75,7 +75,8 @@ abstract class Client
         $protocol = self::PROTOCOL_HTTP,
         $version = 1,
         $verifySSL = false
-    ) {
+    )
+    {
         $this->_serviceName = $serviceName;
         $this->_namespace = $namespace;
         $this->_address = $address;
@@ -98,7 +99,7 @@ abstract class Client
      */
     protected function getBaseUrl(): string
     {
-        return $this->_protocol.'://'.$this->_address.':'.$this->_port.'/webapi/';
+        return $this->_protocol . '://' . $this->_address . ':' . $this->_port . '/webapi/';
     }
 
     /**
@@ -128,7 +129,7 @@ abstract class Client
             $params['_sid'] = $this->getSessionId();
         }
 
-        $params['api'] = $this->_namespace.'.'.$service.'.'.$api;
+        $params['api'] = $this->_namespace . '.' . $service . '.' . $api;
         $params['version'] = ((int)$version > 0) ? (int)$version : $this->_version;
         $params['method'] = $method;
         if ($file) {
@@ -140,7 +141,7 @@ abstract class Client
         $ch = curl_init();
 
         if ($httpMethod !== 'post') {
-            $url = $this->getBaseUrl().$path.'?'.http_build_query($params);
+            $url = $this->getBaseUrl() . $path . '?' . http_build_query($params);
             $this->log($url, 'Requested Url');
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -151,7 +152,7 @@ abstract class Client
                 'version' => $params['version'],
                 '_sid' => $params['_sid']
             ];
-            $url = $this->getBaseUrl().$path.'?'.http_build_query($getParam);
+            $url = $this->getBaseUrl() . $path . '?' . http_build_query($getParam);
 
             unset($params['method'], $params['api'], $params['version'], $params['_sid']);
             $params['size'] = filesize($file);
@@ -168,7 +169,7 @@ abstract class Client
             ]);
             curl_setopt($ch, CURLOPT_HEADER, 0);
             // By Kazio
-            curl_setopt($ch, CURLOPT_COOKIE, 'sid='.$this->_sid);
+            curl_setopt($ch, CURLOPT_COOKIE, 'sid=' . $this->_sid);
         }
 
         // set URL and other appropriate options
@@ -218,21 +219,20 @@ abstract class Client
 
         foreach ($fields as $name => $content) {
             $data .= "--" . $delimiter . $eol
-                . 'Content-Disposition: form-data; name="' . $name . "\"".$eol.$eol
+                . 'Content-Disposition: form-data; name="' . $name . "\"" . $eol . $eol
                 . $content . $eol;
         }
 
         foreach ($files as $name => $content) {
             $data .= "--" . $delimiter . $eol
-                . 'Content-Disposition: form-data; name="file"; filename="'.$name.'"' . $eol
+                . 'Content-Disposition: form-data; name="file"; filename="' . $name . '"' . $eol
                 //. 'Content-Type: image/png'.$eol
-                . 'Content-Type: application/octet-stream'.$eol
-            ;
+                . 'Content-Type: application/octet-stream' . $eol;
 
             $data .= $eol;
             $data .= $content . $eol;
         }
-        $data .= "--" . $delimiter . "--".$eol;
+        $data .= "--" . $delimiter . "--" . $eol;
 
         return $data;
     }
@@ -245,15 +245,25 @@ abstract class Client
      */
     private function parseRequest($json)
     {
-        if (($data = json_decode(trim($json), true)) !== null) {
-            if ($data['success'] === true) {
-                return $data['data'] ?? true;
+        try {
+            if (($data = json_decode(trim($json), true)) !== null) {
+                if ($data['success'] === true) {
+                    return $data['data'] ?? true;
+                }
+                if (array_key_exists($data['error']['code'], self::$_errorCodes)) {
+                    // Pass both the error message and the error code to the exception
+                    throw new SynologyException(self::$_errorCodes[$data['error']['code']], $data['error']['code']);
+                }
+                // Throw the exception with an unknown error message and the actual error code
+                throw new SynologyException(null, $data['error']['code']);
             }
-            if (array_key_exists($data['error']['code'], self::$_errorCodes)) {
-                throw new SynologyException(self::$_errorCodes[$data['error']['code']]);
-            }
-
-            throw new SynologyException(null, $data['error']['code']);
+        } catch (SynologyException $e) {
+            // Handle the exception and return an array with the error code and message
+            return [
+                'success' => 'false',
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage()
+            ];
         }
 
         return $json;
@@ -265,7 +275,7 @@ abstract class Client
      * @param string $param
      * @return string
      */
-    protected function escapeParam($param)
+    protected function escapeParam(string $param) :string
     {
         // Escape backslashes and commas.
         $param = str_replace('\\', '\\\\', $param);
@@ -296,14 +306,14 @@ abstract class Client
     {
         if ($this->_debug) {
             if ($key != null) {
-                echo $key.': ';
+                echo $key . ': ';
             }
 
             if (is_object($value) || is_array($value)) {
-                $value = PHP_EOL.print_r($value, true);
+                $value = PHP_EOL . print_r($value, true);
             }
 
-            echo $value.PHP_EOL;
+            echo $value . PHP_EOL;
         }
     }
 
@@ -315,7 +325,7 @@ abstract class Client
      */
     public function getAvailableApi(): array
     {
-        return $this->request('API','Info', 'query.cgi', 'query', array('query' => 'all'));
+        return $this->request('API', 'Info', 'query.cgi', 'query', array('query' => 'all'));
     }
 
     /**
@@ -329,7 +339,7 @@ abstract class Client
      */
     public function connect($username, $password, $sessionName = null): Client
     {
-        if (! empty($sessionName)) {
+        if (!empty($sessionName)) {
             $this->_sessionName = $sessionName;
         }
 
@@ -342,7 +352,7 @@ abstract class Client
             'session' => 'FileStation',
             'format' => 'sid'
         );
-        $data = $this->request('API','Auth', 'auth.cgi', 'login', $options, 3);
+        $data = $this->request('API', 'Auth', 'auth.cgi', 'login', $options, 3);
 
         // save session name id
         $this->_sid = $data['sid'];
@@ -371,8 +381,8 @@ abstract class Client
     /**
      * Return Session Id
      *
-     * @throws SynologyException
      * @return string
+     * @throws SynologyException
      */
     public function getSessionId(): string
     {
