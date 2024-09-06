@@ -2,7 +2,7 @@
     "name": "kazio73/synology-api-client",
     "description": "Synology API client",
     "homepage": "https://github.com/Kazio73/synology-api-client",
-    "version": "0.3.6",
+    "version": "0.3.8",
     "keywords" : [
         "synology",
         "nas"
