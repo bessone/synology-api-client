@@ -16,6 +16,10 @@ abstract class Client
 
     public const API_SERVICE_NAME = 'API';
 
+    public const MY = '/mydrive';
+
+    public const TEAM = '/team-folders';
+
     public const CONNECT_TIMEOUT = 2000;
     public const REQUEST_TIMEOUT = 300000;
 

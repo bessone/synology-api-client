@@ -1,6 +1,9 @@
 <?php
 
-namespace  Kazio73\SynologyApiClient\Client;
+namespace Kazio73\SynologyApiClient\Client;
+
+use InvalidArgumentException;
+use Kazio73\SynologyApiClient\Client\Traits\FilterData;
 
 /**
  * Class Client.
@@ -8,7 +11,10 @@ namespace  Kazio73\SynologyApiClient\Client;
 class DriveStationClient extends Client
 {
 
-    public const API_SERVICE_NAME = 'FileStation';
+    use FilterData;
+
+
+    public const API_SERVICE_NAME = 'SynologyDrive';
 
     public const API_NAMESPACE = 'SYNO';
 
@@ -41,15 +47,252 @@ class DriveStationClient extends Client
     }
 
     /**
-     * Return Information about VideoStation
-     * - is_manager
-     * - version
-     * - version_string
+     * Get Info about the directory or file
+     * @param string $type The type of directory, can be either 'private' or 'team'.
+     * @param string|null $path The path of the directory (optional). Defaults based on the $type.
+     * @return array
      * @throws SynologyException
      */
-    public function getInfo(): array
+    public function getInfo(
+        string $type = 'private',
+        ?string $path = null,
+    ): array
     {
-        return $this->request(self::API_SERVICE_NAME, 'Info', 'FileStation/info.cgi', 'getinfo');
+
+        $path = $this->accessType($type, $path);
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Files',
+            'entry.cgi',
+            'get',
+            [
+                'path' => json_encode($path),
+            ],
+            2
+        );
+    }
+
+    /**
+     * Get Info TeamFolders
+     * @param $offset
+     * @param $limit
+     * @param $filter
+     * @param $sort_by
+     * @param $sort_direction
+     * @return array
+     * @throws SynologyException
+     */
+    public function getTeamFolders(
+        $offset = 0,
+        $limit = 100,
+        $filter = ['include_transient' => true],
+        $sort_by = 'name',
+        $sort_direction = 'asc',
+
+    ): array
+    {
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'TeamFolders',
+            'entry.cgi',
+            'list',
+            [
+                'offset' => $offset,
+                'limit' => $limit,
+                'filter' => json_encode($filter),
+                'sort_by' => $sort_by,
+                'sort_direction' => $sort_direction,
+            ],
+            1
+        );
+    }
+
+    /**
+     * Get Info MyDrive
+     * @param $offset
+     * @param $limit
+     * @param $filter
+     * @param $sort_by
+     * @param $sort_direction
+     * @return array
+     * @throws SynologyException
+     */
+    public function getMyDrive(
+        $offset = 0,
+        $limit = 100,
+        $filter = ['include_transient' => true],
+        $sort_by = 'name',
+        $sort_direction = 'asc',
+
+    ): array
+    {
+        $path = self::MY;
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Files',
+            'entry.cgi',
+            'list',
+            [
+                'path' => json_encode($path),
+                'offset' => $offset,
+                'limit' => $limit,
+                'filter' => json_encode($filter),
+                'sort_by' => $sort_by,
+                'sort_direction' => $sort_direction,
+            ],
+            2
+        );
+    }
+
+    /**
+     * This method get all object in directory
+     * @param string $type The type of directory, can be either 'private' or 'team'.
+     * @param string|null $path The path of the directory (optional). Defaults based on the $type.
+     * @param $offset
+     * @param $limit
+     * @param $filter
+     * @param $sort_by
+     * @param $sort_direction
+     * @return array
+     * @throws SynologyException
+     */
+    public function getDir(
+        string $type = 'private',
+        ?string $path = null,
+        $offset = 0,
+        $limit = 100,
+        $filter = ['include_transient' => true],
+        $sort_by = 'name',
+        $sort_direction = 'asc',
+    ): array
+    {
+        $path = $this->accessType($type, $path);
+
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Files',
+            'entry.cgi',
+            'list',
+            [
+                'path' => json_encode($path),
+                'offset' => $offset,
+                'limit' => $limit,
+                'filter' => json_encode($filter),
+                'sort_by' => $sort_by,
+                'sort_direction' => $sort_direction,
+            ],
+            1
+        );
+    }
+
+    /**
+     * Create folder in directory
+     * @param string $type The type of directory, can be either 'private' or 'team'.
+     * @param string|null $path The path of the directory (optional). Defaults based on the $type.
+     * @param string $name The name of the new folder.
+     * @param string $kind Default 'folder'.
+     * @param string $conflict Default 'autorename'
+     * @return array|bool|mixed
+     * @throws SynologyException
+     */
+    public function createFolder(
+        string $type = 'private',
+        ?string $path = null,
+        string $name,
+        $kind = 'folder',
+        $conflict = 'autorename'
+    )
+    {
+        $path = $this->accessType($type, $path);
+
+        if ($name != null ) {
+            $path = $path.'/'.$name;
+        } else {
+            throw new InvalidArgumentException("Empty type provided: $name");
+        }
+
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Files',
+            'entry.cgi',
+            'create',
+            [
+                'path' => json_encode($path),
+                'type' => $kind,
+                'conflict_action' => $conflict,
+            ],
+            2
+        );
+    }
+
+    public function deleteFolder(
+        string $type = 'private',
+        ?string $path = null,
+        string $name,
+        $permanent = 'false'
+    )
+    {
+        $path = $this->accessType($type, $path);
+
+        if ($name != null ) {
+            $list = [$path.'/'.$name];
+        }
+        else {
+            throw new InvalidArgumentException("Empty type provided: $name");
+        }
+
+        print_r($list).PHP_EOL;
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Files',
+            'entry.cgi',
+            'delete',
+            [
+                'files' => json_encode($list),
+                'permanent' => $permanent,
+                'revision' => 1
+            ],
+            2
+        );
+    }
+
+    /**
+     * CreateShare a file
+     *
+     * @param string $path (comma separated)
+     * @param string $name
+     * @return array
+     * @throws SynologyException
+     */
+    public function createShare(
+        string $type = 'private',
+        ?string $path = null,
+        string $name,
+        ): array
+    {
+
+        $path = $this->accessType($type, $path);
+
+        if ($name != null ) {
+            $list = [$path.'/'.$name];
+        }
+        else {
+            throw new InvalidArgumentException("Empty type provided: $name");
+        }
+
+        return $this->request(
+            self::API_SERVICE_NAME,
+            'Sharing',
+            'entry.cgi',
+            'create_link',
+            [
+                'path' => json_encode($path),
+                'password' => 'KazioK',
+                'date_expired' => '',
+                'date_available' => '',
+            ],
+            1
+        );
     }
 
     /**
@@ -85,103 +328,7 @@ class DriveStationClient extends Client
                 'sort_by' => $sortby,
                 'sort_direction' => $sortdirection,
                 'additional' => $additional ? 'real_path,owner,time,perm,volume_status' : '',
-            ]
-        );
-    }
-
-    /**
-     * Get info about an object
-     *
-     * @param string $type (List|Sharing)
-     * @param string $id
-     * @return array
-     * @throws SynologyException
-     */
-    public function getObjectInfo($type, $id): array
-    {
-        switch ($type) {
-            case 'List':
-                $path = 'entry.cgi';
-                break;
-            case 'Sharing':
-                $path = 'FileStation/file_sharing.cgi';
-                break;
-            default:
-                throw new SynologyException('Unknow "' . $type . '" object');
-        }
-
-        return $this->request(self::API_SERVICE_NAME, $type, $path, 'getinfo', ['id' => $id]);
-    }
-
-    /**
-     * Get a list of files/directories in a given path
-     *
-     * @param string $path like '/home'
-     * @param int $limit
-     * @param int $offset
-     * @param string $sortby (name|size|user|group|mtime|atime|ctime|crtime|posix|type)
-     * @param string $sortdirection
-     * @param string $pattern
-     * @param string $filetype (all|file|dir)
-     * @param bool $additional
-     * @return mixed
-     * @throws SynologyException
-     */
-    public function getList(
-        $path = '/home',
-        $limit = 25,
-        $offset = 0,
-        $sortby = 'name',
-        $sortdirection = 'asc',
-        $pattern = '',
-        $filetype = 'all',
-        $additional = false
-    )
-    {
-        $path = $this->escapeParam($path);
-
-        return $this->request(
-            self::API_SERVICE_NAME,
-            'List',
-            'entry.cgi',
-            'list',
-            [
-                'folder_path' => $path,
-                'limit' => $limit,
-                'offset' => $offset,
-                'sort_by' => $sortby,
-                'sort_direction' => $sortdirection,
-                'pattern' => $pattern,
-                'filetype' => $filetype,
-                'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
-            ]
-        );
-    }
-
-    /**
-     * Get information of files/directories in a given paths
-     *
-     * @param array $path
-     * @param bool $additional
-     * @return mixed
-     * @throws SynologyException
-     */
-    public function getPathInfo(
-        $path = array(),
-        $additional = false
-    )
-    {
-        $path = $this->escapeParam($path);
-
-        return $this->request(
-            self::API_SERVICE_NAME,
-            'List',
-            'entry.cgi',
-            'getinfo',
-            [
-                'path' => implode(',', $path),
-                'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
-            ]
+            ],
         );
     }
 
@@ -319,33 +466,6 @@ class DriveStationClient extends Client
             3
         );
     }
-
-    /**
-     * CreateShare a file
-     *
-     * @param string $path (comma separated)
-     * @param string $name
-     * @return array
-     * @throws SynologyException
-     */
-    public function shareCreate(string $path): array
-    {
-        return $this->request(
-            self::API_SERVICE_NAME,
-            'Sharing',
-            'entry.cgi',
-            'create',
-            [
-                'path' => $path,
-                'password' => 'KazioK',
-                'date_expired' => '' ,
-                'date_available' => '' ,
-            ],
-            3
-        );
-    }
-
-
     /**
      * Delete file from a given path
      *
@@ -364,38 +484,4 @@ class DriveStationClient extends Client
             1
         );
     }
-
-    /**
-     * Create a folder inside a given path
-     *
-     * @param string $path like '/home'
-     * @param string $name
-     * @param bool $force_parent
-     * @param bool $additional
-     * @return mixed
-     * @throws SynologyException
-     */
-    public function createFolder(
-        $path = '/home',
-        $name = '',
-        $force_parent = false,
-        $additional = false
-    )
-    {
-        $path = $this->escapeParam($path);
-        $name = $this->escapeParam($name);
-
-        return $this->request(
-            self::API_SERVICE_NAME,
-            'CreateFolder',
-            'entry.cgi',
-            'create',
-            [
-                'folder_path' => $path,
-                'name' => $name,
-                'force_parent' => $force_parent,
-                'additional' => $additional ? 'real_path,size,owner,time,perm,type' : '',
-            ]
-        );
-    }
-    }
+}

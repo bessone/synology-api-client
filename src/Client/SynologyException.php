@@ -55,6 +55,9 @@ class SynologyException extends Exception
                 case 408:
                     $message = 'No such file or directory';
                     break;
+                case 1003;
+                    $message = 'Cannot overwrite or skip the existing file because no overwrite parameter is given';
+                    break;
                 default:
                     $message = 'Unknown';
                     break;
