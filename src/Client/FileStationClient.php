@@ -150,8 +150,9 @@ class FileStationClient extends Client
                 'sort_direction' => $sortdirection,
                 'pattern' => $pattern,
                 'filetype' => $filetype,
-                'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
-            ]
+                'additional' => $additional ? '["real_path","size","owner","time","perm"]' : '',
+            ],
+            2
         );
     }
 
@@ -167,7 +168,9 @@ class FileStationClient extends Client
         $path = array(),
         $additional = false
     ) {
-        $path = $this->escapeParam($path);
+        foreach( $path as $key => $value) {
+            $path[$key] = $this->escapeParam($value);
+        }
 
         return $this->request(
             self::API_SERVICE_NAME,
@@ -176,8 +179,9 @@ class FileStationClient extends Client
             'getinfo',
             [
                 'path' => implode(',', $path),
-                'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
-            ]
+                'additional' => $additional ? '["real_path","size","owner","time","perm"]' : '',
+            ],
+            2
         );
     }
 
@@ -245,7 +249,7 @@ class FileStationClient extends Client
                 'sort_direction' => $sortdirection,
                 'pattern' => $pattern,
                 'filetype' => $filetype,
-                'additional' => $additional ? 'real_path,size,owner,time,perm' : '',
+                'additional' => $additional ? '["real_path","size","owner","time","perm"]' : '',
             ]
         );
     }
@@ -319,8 +323,9 @@ class FileStationClient extends Client
                 'folder_path' => $path,
                 'name' => $name,
                 'force_parent' => $force_parent,
-                'additional' => $additional ? 'real_path,size,owner,time,perm,type' : '',
-            ]
+                'additional' => $additional ? '["real_path","size","owner","time","perm","type"]' : '',
+            ],
+            2
         );
     }
 }
